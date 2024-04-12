@@ -1,7 +1,9 @@
-import 'package:chat_app/Authenticate/CreateAccount.dart';
-import 'package:chat_app/Screens/HomeScreen.dart';
-import 'package:chat_app/Authenticate/Methods.dart';
 import 'package:flutter/material.dart';
+
+import '../Screens/HomeScreen.dart';
+import '../constants.dart';
+import 'CreateAccount.dart';
+import 'Methods.dart';
 
 class LoginScreen extends StatefulWidget {
   @override
@@ -110,17 +112,17 @@ class _LoginScreenState extends State<LoginScreen> {
           setState(() {
             isLoading = true;
           });
-
           logIn(_email.text, _password.text).then((user) {
             if (user != null) {
               print("Login Sucessfull");
               setState(() {
                 isLoading = false;
               });
-              Navigator.push(
-                  context, MaterialPageRoute(builder: (_) => HomeScreen()));
+              AppSnackBar.show('Sucessfull', 'Login Sucessfull', Colors.green);
+              Navigator.push(context, MaterialPageRoute(builder: (_) => HomeScreen()));
             } else {
               print("Login Failed");
+              AppSnackBar.show('Invalid', 'Login Failed', Colors.red);
               setState(() {
                 isLoading = false;
               });

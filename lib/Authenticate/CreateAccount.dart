@@ -1,7 +1,9 @@
-import 'package:chat_app/Authenticate/Methods.dart';
+
 import 'package:flutter/material.dart';
 
 import '../Screens/HomeScreen.dart';
+import '../constants.dart';
+import 'Methods.dart';
 
 class CreateAccount extends StatefulWidget {
   @override
@@ -121,16 +123,17 @@ class _CreateAccountState extends State<CreateAccount> {
             isLoading = true;
           });
 
-          createAccount(_name.text, _email.text, _password.text).then((user) {
+          createAccount(_name.text, _email.text.trim(), _password.text).then((user) {
             if (user != null) {
               setState(() {
                 isLoading = false;
               });
-              Navigator.push(
-                  context, MaterialPageRoute(builder: (_) => HomeScreen()));
+              Navigator.push(context, MaterialPageRoute(builder: (_) => HomeScreen()));
               print("Account Created Sucessfull");
+              AppSnackBar.show('Sucessfull', 'Account Created Sucessfull', Colors.green);
             } else {
               print("Login Failed");
+              AppSnackBar.show('Login', 'Login Failed', Colors.red);
               setState(() {
                 isLoading = false;
               });

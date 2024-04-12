@@ -1,9 +1,13 @@
-import 'package:chat_app/Authenticate/Methods.dart';
-import 'package:chat_app/Screens/ChatRoom.dart';
-import 'package:chat_app/group_chats/group_chat_screen.dart';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
+
+import '../Authenticate/Methods.dart';
+import '../constants.dart';
+import '../group_chats/group_chat_screen.dart';
+import 'ChatRoom.dart';
 
 class HomeScreen extends StatefulWidget {
   @override
@@ -51,6 +55,10 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   }
 
   void onSearch() async {
+    if (_search.text.isEmpty) {
+      AppSnackBar.show('Error', 'Please enter a valid email', Colors.red);
+      return;
+    }
     FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
     setState(() {
@@ -59,21 +67,30 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
 
     await _firestore
         .collection('users')
-        .where("email", isEqualTo: _search.text)
+        .where("email", isEqualTo: _search.text.trim())
         .get()
         .then((value) {
-      setState(() {
-        userMap = value.docs[0].data();
-        isLoading = false;
-      });
+      if (value.docs.isNotEmpty) {
+        setState(() {
+          userMap = value.docs[0].data();
+          isLoading = false;
+        });
+        AppSnackBar.show('Successfully', 'User available', Colors.green);
+      } else {
+        setState(() {
+          userMap = null;
+          isLoading = false;
+          AppSnackBar.show('Error', 'Please enter a valid email', Colors.red);
+        });
+      }
       print(userMap);
     });
   }
 
+
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
-
     return Scaffold(
       appBar: AppBar(
         title: Text("Home Screen"),
@@ -123,44 +140,62 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                   height: size.height / 30,
                 ),
                 userMap != null
-                    ? ListTile(
-                        onTap: () {
-                          String roomId = chatRoomId(
-                              _auth.currentUser!.displayName!,
-                              userMap!['name']);
-
-                          Navigator.of(context).push(
-                            MaterialPageRoute(
-                              builder: (_) => ChatRoom(
-                                chatRoomId: roomId,
-                                userMap: userMap!,
-                              ),
+                    ? Container(
+                  margin: EdgeInsets.symmetric(horizontal: 10),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.grey.withOpacity(0.4),
+                              spreadRadius: 1,
+                              blurRadius: 2,
+                              offset: Offset(0, 3), // changes position of shadow
                             ),
-                          );
-                        },
-                        leading: Icon(Icons.account_box, color: Colors.black),
-                        title: Text(
-                          userMap!['name'],
-                          style: TextStyle(
-                            color: Colors.black,
-                            fontSize: 17,
-                            fontWeight: FontWeight.w500,
+                          ],
+                        borderRadius: BorderRadius.circular(10)
+                      ),
+                      child: ListTile(
+                          onTap: () async {
+                            String roomId = chatRoomId(
+                                _auth.currentUser!.displayName!,
+                                userMap!['name']);
+                            String? fcmToken = await FirebaseMessaging.instance.getToken();
+                            print(fcmToken);
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (_) => ChatRoom(
+                                  chatRoomId: roomId,
+                                  userMap: userMap!,
+                                  fcmtoken: fcmToken,
+                                ),
+                              ),
+                            );
+                          },
+                          leading: CircleAvatar(child: Icon(Icons.person),),
+                          title: Text(
+                            userMap!['name'],
+                            style: TextStyle(
+                              color: Colors.black,
+                              fontSize: 17,
+                              fontWeight: FontWeight.w500,
+                            ),
                           ),
+                          subtitle: Text(userMap!['email']),
+                          trailing: Icon(Icons.chat, color: Colors.black),
                         ),
-                        subtitle: Text(userMap!['email']),
-                        trailing: Icon(Icons.chat, color: Colors.black),
-                      )
+                    )
                     : Container(),
+
               ],
             ),
-      floatingActionButton: FloatingActionButton(
-        child: Icon(Icons.group),
-        onPressed: () => Navigator.of(context).push(
-          MaterialPageRoute(
-            builder: (_) => GroupChatHomeScreen(),
-          ),
-        ),
-      ),
+      // floatingActionButton: FloatingActionButton(
+      //   child: Icon(Icons.group),
+      //   onPressed: () => Navigator.of(context).push(
+      //     MaterialPageRoute(
+      //       builder: (_) => GroupChatHomeScreen(),
+      //     ),
+      //   ),
+      // ),
     );
   }
 }

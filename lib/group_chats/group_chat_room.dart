@@ -1,7 +1,9 @@
-import 'package:chat_app/group_chats/group_info.dart';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+
+import 'group_info.dart';
 
 class GroupChatRoom extends StatelessWidget {
   final String groupChatId, groupName;
