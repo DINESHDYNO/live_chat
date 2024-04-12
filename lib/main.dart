@@ -17,10 +17,10 @@ Future main() async {
   await Firebase.initializeApp();
 
   LocalNotificationService.initialize();
-  LocalNotificationService.init();
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
-
-
+  // FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+  //   LocalNotificationService.display(message);
+  // });
   runApp(MyApp());
 }
 

@@ -1,26 +1,18 @@
 
+import 'dart:convert';
 import 'dart:math';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:http/http.dart' as http;
 
 class LocalNotificationService {
-  static final _firebaseMessaging = FirebaseMessaging.instance;
+
+  static String serverKey='AAAAmmMXiYo:APA91bF_LD8ezhyH9-V9NaRzZJCa0HpfWtQDOpetoY6iyOa8BkqwdO6Ju2Xc1TihOveeDhlVezshDTReCkhedLlCTmuew77y9TPSy_Nks_0KkIYx-Qs7peCj2TuUD3Q4fu5J6yOQTlYi';
+
   static final FlutterLocalNotificationsPlugin
   _flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
-  static Future init() async {
-    await _firebaseMessaging.requestPermission(
-      alert: true,
-      announcement: true,
-      badge: true,
-      carPlay: false,
-      criticalAlert: false,
-      provisional: false,
-      sound: true,
-    );
-    // get the device fcm token
-    final token = await _firebaseMessaging.getToken();
-    print("device token: ($token)");
-  }
   static void initialize() {
     final InitializationSettings initializationSettings =
     InitializationSettings(
@@ -33,14 +25,15 @@ class LocalNotificationService {
       print("In Notification method");
       Random random = new Random();
       int id = random.nextInt(1000);
-      final NotificationDetails notificationDetails = NotificationDetails(
+      const NotificationDetails notificationDetails = NotificationDetails(
           android: AndroidNotificationDetails(
             "mychanel",
             "my chanel",
             importance: Importance.max,
             priority: Priority.high,
+              playSound: true,
+              enableVibration: true,
           )
-
       );
       print("my id is ${id.toString()}");
       await _flutterLocalNotificationsPlugin.show(
@@ -59,5 +52,30 @@ class LocalNotificationService {
           "status": "done",
           "message": message
         };
+
+        try {
+          final headers = {
+            'Content-Type': 'application/json',
+            'Authorization': 'key=$serverKey',
+          };
+          http.Response response = await http.post(
+            Uri.parse('https://fcm.googleapis.com/fcm/send'),
+            headers: headers,
+            body: jsonEncode(<String, dynamic>{
+              'notification': <String, dynamic>{'body': message, 'title': title},
+              'priority': 'high',
+              'data': data,
+              'to': "$token"
+            }),
+          );
+          print('FCM response: ${response.body}');
+          if(response.statusCode==200){
+            print('done');
+          }else{
+            print(response.statusCode);
+          }
+        } catch (e) {
+          print('Error sending FCM notification: $e');
+        }
   }
 }

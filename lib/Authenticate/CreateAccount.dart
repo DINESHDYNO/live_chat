@@ -133,7 +133,7 @@ class _CreateAccountState extends State<CreateAccount> {
               AppSnackBar.show('Sucessfull', 'Account Created Sucessfull', Colors.green);
             } else {
               print("Login Failed");
-              AppSnackBar.show('Login', 'Login Failed', Colors.red);
+              AppSnackBar.show('Account', 'Created Account Failed', Colors.red);
               setState(() {
                 isLoading = false;
               });

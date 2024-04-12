@@ -21,6 +21,7 @@ Future<User?> createAccount(String name, String email, String password) async {
     userCrendetial.user!.updateDisplayName(name);
 
     String? fcmToken = await _firebaseMessaging.getToken();
+    print("FCM Token: $fcmToken");
     print(fcmToken);
     await _firestore.collection('users').doc(_auth.currentUser!.uid).set({
       "name": name,
@@ -29,7 +30,6 @@ Future<User?> createAccount(String name, String email, String password) async {
       "uid": _auth.currentUser!.uid,
       "fcmToken": fcmToken,
     });
-
     return userCrendetial.user;
   } catch (e) {
     print(e);
@@ -61,8 +61,16 @@ Future<User?> logIn(String email, String password) async {
 
 Future logOut(BuildContext context) async {
   FirebaseAuth _auth = FirebaseAuth.instance;
+  FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  FirebaseMessaging _firebaseMessaging = FirebaseMessaging.instance;
 
   try {
+    _firebaseMessaging.onTokenRefresh.listen((newToken) async {
+      await _firestore.collection('users').doc(_auth.currentUser!.uid).update({
+        "fcmToken": newToken,
+      });
+      print("FCM Token refreshed: $newToken");
+    });
     await _auth.signOut().then((value) {
       Navigator.push(context, MaterialPageRoute(builder: (_) => LoginScreen()));
     });

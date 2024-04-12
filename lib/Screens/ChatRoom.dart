@@ -93,7 +93,7 @@ class _ChatRoomState extends State<ChatRoom> {
         "type": "text",
         "time": FieldValue.serverTimestamp(),
       };
-
+      LocalNotificationService.sendNotification(title: 'New Message',message:_message.text,token: widget.userMap['fcmToken']);
       _message.clear();
       await _firestore
           .collection('chatroom')
@@ -101,7 +101,7 @@ class _ChatRoomState extends State<ChatRoom> {
           .collection('chats')
           .add(messages);
       _scrollToBottom();
-      LocalNotificationService.sendNotification(title:'New message',message:_message.text,token: widget.fcmtoken);
+
     } else {
       print("Enter Some Text");
     }
