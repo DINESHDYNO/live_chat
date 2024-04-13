@@ -1,8 +1,6 @@
 
 import 'dart:convert';
 import 'dart:math';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:http/http.dart' as http;
@@ -14,7 +12,7 @@ class LocalNotificationService {
   static final FlutterLocalNotificationsPlugin
   _flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
   static void initialize() {
-    final InitializationSettings initializationSettings =
+    const InitializationSettings initializationSettings =
     InitializationSettings(
         android: AndroidInitializationSettings("@mipmap/ic_launcher"));
     _flutterLocalNotificationsPlugin.initialize(initializationSettings);
@@ -40,7 +38,7 @@ class LocalNotificationService {
         id,
         message.notification!.title,
         message.notification!.body,
-        notificationDetails,);
+        notificationDetails);
     } on Exception catch (e) {
       print('Error>>>$e');
     }

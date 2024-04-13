@@ -1,5 +1,4 @@
 import 'dart:io';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
@@ -80,7 +79,7 @@ class _ChatRoomState extends State<ChatRoom> {
           .collection('chats')
           .doc(fileName)
           .update({"message": imageUrl});
-
+      LocalNotificationService.sendNotification(title: 'New Message',message:imageUrl,token: widget.userMap['fcmToken']);
       print(imageUrl);
     }
   }
@@ -93,6 +92,8 @@ class _ChatRoomState extends State<ChatRoom> {
         "type": "text",
         "time": FieldValue.serverTimestamp(),
       };
+      // _firestore.collection("users").doc(widget.userMap['uid']).snapshots();
+      // LocalNotificationService.sendNotification(title: widget.userMap['name'],message:_message.text,token: widget.userMap['fcmToken']);
       LocalNotificationService.sendNotification(title: 'New Message',message:_message.text,token: widget.userMap['fcmToken']);
       _message.clear();
       await _firestore
@@ -118,7 +119,6 @@ class _ChatRoomState extends State<ChatRoom> {
     final size = MediaQuery
         .of(context)
         .size;
-
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false,
@@ -314,7 +314,6 @@ class _ChatRoomState extends State<ChatRoom> {
         ),
       ),
     );
-    ;
   }
 }
 
